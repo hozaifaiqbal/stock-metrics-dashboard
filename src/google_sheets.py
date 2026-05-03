@@ -7,6 +7,7 @@ load_dotenv()
 
 SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
 CREDENTIALS_PATH = os.getenv("GOOGLE_CREDENTIALS_PATH")
+SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 
 
 def get_worksheet_df(spreadsheet, worksheet_name):
@@ -23,7 +24,14 @@ def load_all_sheets():
         raise ValueError("GOOGLE_SHEET_NAME is missing in .env")
 
     gc = gspread.service_account(filename=CREDENTIALS_PATH)
-    spreadsheet = gc.open(SHEET_NAME)
+    SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
+    if SHEET_ID:
+        spreadsheet = gc.open_by_key(SHEET_ID)
+    else:
+        if not SHEET_NAME:
+            raise ValueError("GOOGLE_SHEET_NAME or GOOGLE_SHEET_ID is missing")
+        spreadsheet = gc.open(SHEET_NAME)
+
 
     transactions = get_worksheet_df(spreadsheet, "1_TRANSACTIONS")
     stock_master = get_worksheet_df(spreadsheet, "2_STOCK_MASTER")

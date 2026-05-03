@@ -263,7 +263,7 @@ position_tag
 
 Follow these steps to set up the environment and run the dashboard on your machine.
 
-#### 1. Create and activate a virtual environment
+### 1. Create and activate a virtual environment
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
@@ -295,3 +295,108 @@ MY_EMAIL=your_sender_email@gmail.com
 APP_PASSWORD=your_gmail_app_password
 EMAIL_TO=receiver_email@gmail.com
 ```
+Do not upload .env to GitHub.
+
+## GitHub Actions Secrets
+For weekly automation, add these repository secrets:
+```bash
+GOOGLE_SHEET_NAME
+GOOGLE_SHEET_ID
+GOOGLE_CREDENTIALS_JSON
+MY_EMAIL
+APP_PASSWORD
+EMAIL_TO
+```
+The service account JSON is stored securely as a GitHub Secret and recreated during workflow execution.
+
+## Privacy And Security
+This project is designed with privacy in mind.
+* .env is ignored from GitHub
+* Google service account JSON is ignored from GitHub
+* Reports are ignored from GitHub
+* Real portfolio data is not uploaded
+* Public users can upload files locally through the dashboard
+* GitHub Actions uses encrypted repository secrets
+
+Recommended .gitignore entries:
+```bash
+.env
+credentials/
+*.json
+.venv/
+venv/
+__pycache__/
+reports/
+data/exports/
+```
+
+## Current Metrics
+The project currently calculates:
+
+* Lifetime capital deployed
+* Open capital
+* Current open value
+* Realized P&L
+* Unrealized P&L
+* Total P&L
+* Lifetime return
+* Lifetime CAGR
+* Open return
+* Open CAGR
+* Stock allocation
+* Sector allocation
+* Best performer by amount
+* Worst performer by amount
+* Best performer by percentage
+* Worst performer by percentage
+* Nifty 50 comparison
+* USD-INR comparison
+* FD return comparison
+
+## Planned Improvements
+Upcoming analytics:
+
+* Integration with directly your broker PnL
+* Calculating TAX implications 
+* Other vital metrics for portfolio
+* Mutual fund category comparison
+* Monthly one-page report
+* Better PDF report design
+* Streamlit Cloud deployment
+
+## Skills Demonstrated
+This project demonstrates:
+
+* Python development
+* pandas data cleaning
+* Google Sheets API integration
+* API authentication
+* Secure credential management
+* Financial data modeling
+* Portfolio analytics
+* Market data fetching
+* Streamlit dashboarding
+* Plotly visualization
+* PDF report generation
+* Email automation
+* GitHub Actions automation
+* Product-oriented project design
+* Privacy-first application flow
+
+## Resume Summary
+
+Built an end-to-end portfolio analytics and reporting system using Python, pandas, Streamlit, Plotly, yfinance, Google Sheets API, Playwright, Gmail SMTP, and GitHub Actions. The system automates portfolio tracking, live market valuation, realized/unrealized P&L calculation, CAGR analysis, benchmark comparison, dashboard visualization, PDF report generation, and weekly email delivery.
+
+## Author
+Built by Hozaifa Iqbal as a real-world fintech and data analytics project.
+
+```bash
+
+For uploading screenshots:
+
+- On GitHub website: **Add file -> Upload files**
+- Upload into an `assets/` folder
+- Use names like `dashboard.png`, `report.png`, `email.png`
+- Then your README image links will work automatically.
+```
+

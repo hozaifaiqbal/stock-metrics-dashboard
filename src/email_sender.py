@@ -22,7 +22,9 @@ def send_email_with_attachment(subject, body, attachment_path):
     msg["From"] = sender_email
     msg["To"] = receiver_email
     msg["Subject"] = subject
-    msg.set_content(body)
+    msg.set_content("Your weekly portfolio report is attached.")
+    msg.add_alternative(body, subtype="html")
+
 
     attachment_data = attachment_path.read_bytes()
 

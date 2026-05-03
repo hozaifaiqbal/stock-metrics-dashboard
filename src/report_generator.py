@@ -15,6 +15,8 @@ from portfolio_engine import (
     calculate_portfolio_summary,
 )
 from benchmark import calculate_benchmark_comparison, get_performance_message
+from risk_metrics import calculate_risk_metrics
+
 
 def image_to_base64(image_path):
     image_path = Path(image_path)
@@ -32,6 +34,8 @@ def generate_weekly_html_report():
     summary = calculate_portfolio_summary(positions)
     benchmark = calculate_benchmark_comparison(transactions, summary)
     messages = get_performance_message(benchmark)
+    risk_metrics = calculate_risk_metrics(positions)
+
 
     chart_dir = Path("reports/weekly/assets")
     charts = create_weekly_report_charts(positions, chart_dir)
@@ -152,6 +156,20 @@ def generate_weekly_html_report():
             <div class="chart-card">
                 <img src="{return_chart}" />
             </div>
+        </div>
+
+        <h2>Risk Metrics</h2>
+        <div class="grid">
+            <div class="card"><div class="label">Beta</div><div class="value">{risk_metrics["portfolio_beta"]}</div></div>
+            <div class="card"><div class="label">Alpha</div><div class="value">{risk_metrics["portfolio_alpha_pct"]}%</div></div>
+            <div class="card"><div class="label">Volatility</div><div class="value">{risk_metrics["annual_volatility_pct"]}%</div></div>
+            <div class="card"><div class="label">Sharpe Ratio</div><div class="value">{risk_metrics["sharpe_ratio"]}</div></div>
+        </div>
+
+        <div class="grid">
+            <div class="card"><div class="label">Sortino Ratio</div><div class="value">{risk_metrics["sortino_ratio"]}</div></div>
+            <div class="card"><div class="label">Max Drawdown</div><div class="value">{risk_metrics["max_drawdown_pct"]}%</div></div>
+            <div class="card"><div class="label">Correlation vs Nifty</div><div class="value">{risk_metrics["correlation_with_benchmark"]}</div></div>
         </div>
 
 

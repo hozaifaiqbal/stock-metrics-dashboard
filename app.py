@@ -43,6 +43,7 @@ from portfolio_engine import (
 from benchmark import calculate_benchmark_comparison, get_performance_message
 from stock_metadata import enrich_positions_with_metadata
 from template_generator import create_excel_template
+from risk_metrics import calculate_risk_metrics
 
 
 
@@ -107,6 +108,7 @@ with st.spinner("Loading portfolio data..."):
 
     summary = calculate_portfolio_summary(positions)
     benchmark = calculate_benchmark_comparison(transactions, summary)
+    risk_metrics = calculate_risk_metrics(positions)
     messages = get_performance_message(benchmark)
 
 
@@ -149,8 +151,26 @@ st.info(messages["nifty_message"])
 st.info(messages["fd_message"])
 
 
+st.divider()
+
+st.subheader("Risk Metrics")
+
+risk_cols = st.columns(4)
+
+risk_cols[0].metric("Beta", risk_metrics["portfolio_beta"])
+risk_cols[1].metric("Alpha", f"{risk_metrics['portfolio_alpha_pct']}%")
+risk_cols[2].metric("Volatility", f"{risk_metrics['annual_volatility_pct']}%")
+risk_cols[3].metric("Sharpe Ratio", risk_metrics["sharpe_ratio"])
+
+risk_cols_2 = st.columns(4)
+
+risk_cols_2[0].metric("Sortino Ratio", risk_metrics["sortino_ratio"])
+risk_cols_2[1].metric("Max Drawdown", f"{risk_metrics['max_drawdown_pct']}%")
+risk_cols_2[2].metric("Correlation vs Nifty", risk_metrics["correlation_with_benchmark"])
+
 
 st.divider()
+
 
 display_columns = [
     "ticker",

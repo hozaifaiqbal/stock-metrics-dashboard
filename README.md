@@ -169,21 +169,6 @@ GitHub Actions Scheduler
 | **Secrets** | python-dotenv, GitHub Secrets |
 | **Development** | VS Code, Git, GitHub |
 
-## 🛠️ Tech Stack
-
-| Area | Tools Used |
-| :--- | :--- |
-| **Programming** | Python |
-| **Data Handling** | pandas, openpyxl |
-| **Market Data** | yfinance |
-| **Google Sheets** | gspread, Google Sheets API, Google Cloud Service Account |
-| **Dashboard** | Streamlit |
-| **Visualization** | Plotly |
-| **PDF Generation** | Playwright, Chromium |
-| **Email** | Gmail SMTP, email.message |
-| **Automation** | GitHub Actions |
-| **Secrets** | python-dotenv, GitHub Secrets |
-| **Development** | VS Code, Git, GitHub |
 
 ## 📂 Folder Structure
 
@@ -273,4 +258,40 @@ position_tag
 8. Report generator creates weekly HTML/PDF reports.
 9. Email sender sends the report.
 10. GitHub Actions runs the process automatically every week.
+```
+## 🛠️ How To Run Locally
+
+Follow these steps to set up the environment and run the dashboard on your machine.
+
+#### 1. Create and activate a virtual environment
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+###  2. Install Dependancies
+```bash
+pip install -r requirements.txt
+```
+
+###  3. Run the dashboard:
+```bash
+python -m streamlit run app.py
+```
+
+###  4. Generate weekly report manually:
+```bash
+python src/run_weekly_report.py
+```
+
+## Environment Variables
+Create a .env file locally:
+```bash
+GOOGLE_SHEET_NAME=your_sheet_name
+GOOGLE_SHEET_ID=your_google_sheet_id
+GOOGLE_CREDENTIALS_PATH=credentials/google-service-account.json
+
+MY_EMAIL=your_sender_email@gmail.com
+APP_PASSWORD=your_gmail_app_password
+EMAIL_TO=receiver_email@gmail.com
 ```

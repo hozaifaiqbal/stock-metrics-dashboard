@@ -388,15 +388,8 @@ This project demonstrates:
 Built an end-to-end portfolio analytics and reporting system using Python, pandas, Streamlit, Plotly, yfinance, Google Sheets API, Playwright, Gmail SMTP, and GitHub Actions. The system automates portfolio tracking, live market valuation, realized/unrealized P&L calculation, CAGR analysis, benchmark comparison, dashboard visualization, PDF report generation, and weekly email delivery.
 
 ## Author
-Built by Hozaifa Iqbal as a real-world fintech and data analytics project.
+Built by Hozaifa Iqbal.
 
-```bash
 
-For uploading screenshots:
 
-- On GitHub website: **Add file -> Upload files**
-- Upload into an `assets/` folder
-- Use names like `dashboard.png`, `report.png`, `email.png`
-- Then your README image links will work automatically.
-```
 

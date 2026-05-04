@@ -11,7 +11,7 @@ import plotly.express as px
 import streamlit as st
 
 import pandas as pd
-
+import os
 
 def load_uploaded_file(uploaded_file):
     if uploaded_file.name.endswith(".csv"):
@@ -70,14 +70,27 @@ st.caption(
 
 st.sidebar.header("Data Source")
 
+show_google_sheet_mode = (
+    os.getenv("SHOW_GOOGLE_SHEET_MODE", "false").lower() == "true"
+)
+
+data_source_options = ["Upload CSV/Excel"]
+
+if show_google_sheet_mode:
+    data_source_options.append("Google Sheet")
+
 data_source = st.sidebar.radio(
     "Choose input method",
-    ["Google Sheet", "Upload CSV/Excel"],
+    data_source_options,
 )
 
 uploaded_file = None
 
 if data_source == "Upload CSV/Excel":
+    st.sidebar.caption(
+        "Download the template, fill your data locally, then upload it here."
+    )
+
     uploaded_file = st.sidebar.file_uploader(
         "Upload portfolio file",
         type=["csv", "xlsx", "xls"],

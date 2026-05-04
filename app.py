@@ -42,9 +42,12 @@ from portfolio_engine import (
 )
 from benchmark import calculate_benchmark_comparison, get_performance_message
 from stock_metadata import enrich_positions_with_metadata
-from template_generator import create_excel_template
 from risk_metrics import calculate_risk_metrics
-
+from template_generator import (
+    create_excel_template,
+    create_sample_transactions,
+    create_stock_master_template,
+)
 
 
 
@@ -104,10 +107,12 @@ with st.spinner("Loading portfolio data..."):
 
     else:
         if uploaded_file is None:
-            st.info("Upload a CSV or Excel file to generate your dashboard.")
-            st.stop()
+            st.info("Showing demo dashboard. Upload your filled template to view your own portfolio.")
+            raw_transactions = create_sample_transactions()
+            stock_master = create_stock_master_template()
+        else:
+            raw_transactions, stock_master = load_uploaded_file(uploaded_file)
 
-        raw_transactions, stock_master = load_uploaded_file(uploaded_file)
 
     transactions = clean_transactions(raw_transactions)
     positions = calculate_positions(transactions)

@@ -69,6 +69,7 @@ st.download_button(
 )
 st.caption(
     "Your data stays private. Download the template, fill it locally, and upload it here to generate your dashboard."
+    "Demo dashboard assumes Rs 1,00,000 invested equally in Reliance, TCS, UltraTech Cement, and Asian Paints on 2020-01-01. UltraTech Cement is shown as sold, while the other three remain open holdings."
 )
 
 st.sidebar.header("Data Source")

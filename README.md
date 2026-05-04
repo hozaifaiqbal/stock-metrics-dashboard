@@ -24,8 +24,8 @@ In a market with over **12cr+ active demat accounts** and **~35 AMCs** competing
 
 
 ![One Pager Report](assets/one_pager_report.png)
-![Sector Analysis](assets/sector_Industry.png)
-![Streamlit Dashboard](assets/Streamlit.png)
+![Sector Analysis](assets/sector_industry.png)
+![Streamlit Dashboard](assets/dashboard.png)
 ![Streamlit Dashboard](assets/streamlit_report.png)
 ![Dashboard Preview](assets/email.png)
 

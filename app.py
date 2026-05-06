@@ -48,6 +48,7 @@ from template_generator import (
     create_sample_transactions,
     create_stock_master_template,
 )
+from report_generator import generate_dashboard_pdf_report
 
 
 
@@ -130,6 +131,29 @@ with st.spinner("Loading portfolio data..."):
     risk_metrics = calculate_risk_metrics(positions)
     messages = get_performance_message(benchmark)
 
+st.subheader("Portfolio Summary")
+st.divider()
+
+if st.button("Prepare PDF Report"):
+    with st.spinner("Creating PDF report..."):
+        pdf_path = generate_dashboard_pdf_report(
+            positions=positions,
+            summary=summary,
+            benchmark=benchmark,
+            messages=messages,
+            risk_metrics=risk_metrics,
+        )
+
+        st.session_state["dashboard_pdf_bytes"] = Path(pdf_path).read_bytes()
+        st.session_state["dashboard_pdf_name"] = Path(pdf_path).name
+
+if "dashboard_pdf_bytes" in st.session_state:
+    st.download_button(
+        label="Download PDF Report",
+        data=st.session_state["dashboard_pdf_bytes"],
+        file_name=st.session_state["dashboard_pdf_name"],
+        mime="application/pdf",
+    )
 
 
 st.subheader("Portfolio Summary")

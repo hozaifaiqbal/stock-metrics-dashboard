@@ -236,6 +236,123 @@ def convert_html_to_pdf(html_path):
     return pdf_path
 
 
+def generate_dashboard_pdf_report(positions, summary, benchmark, messages, risk_metrics):
+    today = datetime.today().strftime("%Y-%m-%d")
+
+    report_html = f"""
+    <html>
+    <head>
+        <title>Portfolio Dashboard Report</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                margin: 40px;
+                color: #222;
+            }}
+            h1, h2 {{
+                color: #1f2937;
+            }}
+            .grid {{
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+                margin-bottom: 24px;
+            }}
+            .card {{
+                border: 1px solid #ddd;
+                padding: 16px;
+                border-radius: 8px;
+                background: #f9fafb;
+            }}
+            .label {{
+                font-size: 12px;
+                color: #666;
+            }}
+            .value {{
+                font-size: 22px;
+                font-weight: bold;
+                margin-top: 8px;
+            }}
+            .message {{
+                background: #e8f2ff;
+                padding: 14px;
+                border-radius: 6px;
+                margin: 10px 0;
+            }}
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 20px;
+                font-size: 12px;
+            }}
+            th, td {{
+                border: 1px solid #ddd;
+                padding: 7px;
+                text-align: right;
+            }}
+            th {{
+                background: #f3f4f6;
+            }}
+            td:first-child, th:first-child {{
+                text-align: left;
+            }}
+        </style>
+    </head>
+    <body>
+        <h1>Portfolio Dashboard Report</h1>
+        <p>Report Date: {today}</p>
+
+        <h2>Portfolio Summary</h2>
+        <div class="grid">
+            <div class="card"><div class="label">Open Capital</div><div class="value">Rs {summary["open_capital"]:,.0f}</div></div>
+            <div class="card"><div class="label">Current Value</div><div class="value">Rs {summary["current_value"]:,.0f}</div></div>
+            <div class="card"><div class="label">Total P&L</div><div class="value">Rs {summary["total_pnl"]:,.0f}</div></div>
+            <div class="card"><div class="label">Lifetime Return</div><div class="value">{summary["lifetime_return_pct"]}%</div></div>
+        </div>
+
+        <h2>Benchmark Comparison</h2>
+        <div class="grid">
+            <div class="card"><div class="label">Nifty 50 Return</div><div class="value">{benchmark["nifty_return_pct"]}%</div></div>
+            <div class="card"><div class="label">Alpha vs Nifty</div><div class="value">{benchmark["nifty_alpha_pct"]}%</div></div>
+            <div class="card"><div class="label">USD-INR Change</div><div class="value">{benchmark["usd_inr_return_pct"]}%</div></div>
+            <div class="card"><div class="label">FD CAGR Alpha</div><div class="value">{benchmark["fd_alpha_pct"]}%</div></div>
+        </div>
+
+        <div class="message">{messages["nifty_message"]}</div>
+        <div class="message">{messages["fd_message"]}</div>
+
+        <h2>Risk Metrics</h2>
+        <div class="grid">
+            <div class="card"><div class="label">Beta</div><div class="value">{risk_metrics["portfolio_beta"]}</div></div>
+            <div class="card"><div class="label">Alpha</div><div class="value">{risk_metrics["portfolio_alpha_pct"]}%</div></div>
+            <div class="card"><div class="label">Volatility</div><div class="value">{risk_metrics["annual_volatility_pct"]}%</div></div>
+            <div class="card"><div class="label">Sharpe Ratio</div><div class="value">{risk_metrics["sharpe_ratio"]}</div></div>
+        </div>
+
+        <h2>Live Positions</h2>
+        {positions[[
+            "ticker",
+            "company_name",
+            "open_quantity",
+            "average_buy_price",
+            "current_price",
+            "current_value",
+            "total_pnl",
+            "total_return_pct",
+            "open_cagr_pct",
+            "allocation_pct",
+        ]].to_html(index=False)}
+    </body>
+    </html>
+    """
+
+    output_dir = Path("reports/dashboard")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    html_path = output_dir / f"dashboard_report_{today}.html"
+    html_path.write_text(report_html, encoding="utf-8")
+
+    return convert_html_to_pdf(html_path)
     
 
 if __name__ == "__main__":

@@ -1,0 +1,9 @@
+.env
+credentials/
+*.json
+.venv/
+venv/
+__pycache__/
+reports/
+data/exports/
+learnings.txt

@@ -1,0 +1,39 @@
+name: Weekly Portfolio Report
+
+on:
+  schedule:
+    - cron: "0 7 * * 0"
+  workflow_dispatch:
+
+jobs:
+  send-weekly-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install chromium
+
+      - name: Create Google credentials file
+        run: |
+          mkdir -p credentials
+          printf '%s' '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials/google-service-account.json
+
+      - name: Run weekly report
+        env:
+          GOOGLE_SHEET_NAME: ${{ secrets.GOOGLE_SHEET_NAME }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_CREDENTIALS_PATH: credentials/google-service-account.json
+          MY_EMAIL: ${{ secrets.MY_EMAIL }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python src/run_weekly_report.py

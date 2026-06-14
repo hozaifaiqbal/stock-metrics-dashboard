@@ -68,10 +68,6 @@ st.download_button(
     file_name="stock_dashboard_template.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 )
-st.caption(
-    "Your data stays private. Download the template, fill it locally, and upload it here to generate your dashboard.\n\n"
-    "Demo dashboard assumes Rs 1,00,000 invested equally in Reliance, TCS, UltraTech Cement, and Asian Paints on 2020-01-01. UltraTech Cement is shown as sold, while the other three remain open holdings."
-)
 
 st.sidebar.header("Data Source")
 
@@ -101,6 +97,36 @@ if data_source == "Upload CSV/Excel":
         type=["csv", "xlsx", "xls"],
     )
 
+if data_source == "Upload CSV/Excel":
+    st.caption(
+        "Your data stays private. Download the template, fill it locally, and upload it here to generate your dashboard."
+    )
+
+    if uploaded_file is None:
+        st.info("Showing demo dashboard. Upload your filled template to view your own portfolio.")
+        st.caption(
+            "Demo dashboard assumes Rs 1,00,000 invested equally in Reliance, TCS, UltraTech Cement, and Asian Paints on 2020-01-01. UltraTech Cement is shown as sold, while the other three remain open holdings."
+        )
+
+elif data_source == "Google Sheet":
+    st.markdown(
+        """
+        <p style="
+            color: #1e3a8a; 
+            font-family: 'Georgia', serif; 
+            font-size: 15px; 
+            font-style: italic; 
+            background-color: #eff6ff; 
+            padding: 14px; 
+            border-radius: 8px; 
+            border: 1px dashed #3b82f6;
+        ">
+           Personal Google Sheet mode: calculations are based on my recorded trades and current positions from the date of 15 June 2026.As i am tracking this portfolio for myself and i am measuring my performance from this specific date.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
 with st.spinner("Loading portfolio data..."):
     if data_source == "Google Sheet":
         data = load_all_sheets()
@@ -109,14 +135,23 @@ with st.spinner("Loading portfolio data..."):
 
     else:
         if uploaded_file is None:
-            st.info("Showing demo dashboard. Upload your filled template to view your own portfolio.")
             raw_transactions = create_sample_transactions()
             stock_master = create_stock_master_template()
         else:
             raw_transactions, stock_master = load_uploaded_file(uploaded_file)
 
-
     transactions = clean_transactions(raw_transactions)
+    broker_options = ["All"] + sorted(transactions["broker"].dropna().unique().tolist())
+
+    selected_broker = st.sidebar.selectbox(
+    "Broker / Demat account",
+    broker_options,
+    )
+
+    if selected_broker != "All":
+        transactions = transactions[transactions["broker"] == selected_broker]
+   
+    
     positions = calculate_positions(transactions)
     positions = add_market_values(positions)
 
@@ -130,6 +165,8 @@ with st.spinner("Loading portfolio data..."):
     benchmark = calculate_benchmark_comparison(transactions, summary)
     risk_metrics = calculate_risk_metrics(positions)
     messages = get_performance_message(benchmark)
+
+
 
 st.subheader("Portfolio Summary")
 st.divider()

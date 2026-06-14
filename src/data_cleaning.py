@@ -1,25 +1,28 @@
 import pandas as pd
 
 REQUIRED_TRANSACTION_COLUMNS = [
-    "transaction_id",
-    "broker",
-    "account_name",
     "ticker",
-    "company_name",
-    "exchange",
-    "sector",
     "transaction_type",
     "transaction_date",
     "quantity",
     "price",
-    "gross_amount",
-    "charges",
-    "net_amount",
-    "trade_label",
-    "notes",
-    "status",
-    "position_tag",
 ]
+
+OPTIONAL_TRANSACTION_COLUMNS = {
+    "transaction_id": "",
+    "broker": "unknown",
+    "account_name": "default",
+    "company_name": "",
+    "exchange": "NSE",
+    "sector": "Unknown",
+    "gross_amount": None,
+    "charges": 0,
+    "net_amount": None,
+    "trade_label": "",
+    "notes": "",
+    "status": "COMPLETED",
+    "position_tag": "",
+}
 
 
 def validate_columns(df, required_columns):
@@ -35,6 +38,14 @@ def validate_columns(df, required_columns):
 
 def clean_transactions(df):
     df = df.copy()
+
+    df = df.dropna(how="all")
+
+    validate_columns(df, REQUIRED_TRANSACTION_COLUMNS)
+
+    for column, default_value in OPTIONAL_TRANSACTION_COLUMNS.items():
+        if column not in df.columns:
+            df[column] = default_value
 
     validate_columns(df, REQUIRED_TRANSACTION_COLUMNS)
 
@@ -78,9 +89,27 @@ def clean_transactions(df):
         bad_rows = df[df["transaction_date"].isna()]["transaction_id"].tolist()
         raise ValueError(f"Invalid transaction_date in rows: {bad_rows}")
 
-    if df[numeric_columns].isna().any().any():
-        raise ValueError("Some numeric columns contain invalid values.")
+    core_numeric_columns = ["quantity", "price"]
 
+    if df[core_numeric_columns].isna().any().any():
+        raise ValueError("Quantity and price are required for every transaction.")
+
+    df["charges"] = df["charges"].fillna(0)
+
+    df["gross_amount"] = df["gross_amount"].fillna(
+        df["quantity"] * df["price"]
+    )
+
+    buy_mask = df["transaction_type"] == "BUY"
+    sell_mask = df["transaction_type"] == "SELL"
+
+    df.loc[buy_mask, "net_amount"] = df.loc[buy_mask, "net_amount"].fillna(
+        df.loc[buy_mask, "gross_amount"] + df.loc[buy_mask, "charges"]
+    )
+
+    df.loc[sell_mask, "net_amount"] = df.loc[sell_mask, "net_amount"].fillna(
+        df.loc[sell_mask, "gross_amount"] - df.loc[sell_mask, "charges"]
+    )    
     return df
 
 

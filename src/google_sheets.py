@@ -20,8 +20,7 @@ def load_all_sheets():
     if not CREDENTIALS_PATH:
         raise ValueError("GOOGLE_CREDENTIALS_PATH is missing in .env")
 
-    if not SHEET_NAME:
-        raise ValueError("GOOGLE_SHEET_NAME is missing in .env")
+
 
     gc = gspread.service_account(filename=CREDENTIALS_PATH)
     SHEET_ID = os.getenv("GOOGLE_SHEET_ID")

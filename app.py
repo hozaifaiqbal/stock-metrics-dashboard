@@ -120,11 +120,11 @@ with st.spinner("Loading portfolio data..."):
     positions = calculate_positions(transactions)
     positions = add_market_values(positions)
 
-    if not stock_master.empty:
-        try:
-            positions = enrich_positions_with_metadata(positions, stock_master)
-        except Exception:
-            pass
+    try:
+        positions = enrich_positions_with_metadata(positions, stock_master)
+    except Exception:
+        positions["final_sector"] = positions.get("sector", "Unknown")
+        positions["final_industry"] = "Unknown"
 
     summary = calculate_portfolio_summary(positions)
     benchmark = calculate_benchmark_comparison(transactions, summary)

@@ -13,12 +13,14 @@ def calculate_positions(transactions):
     sells = transactions[transactions["transaction_type"] == "SELL"]
 
     buy_summary = (
-        buys.groupby(["ticker", "company_name", "sector"], as_index=False)
-        .agg(
-            total_buy_quantity=("quantity", "sum"),
-            total_buy_amount=("net_amount", "sum"),
-        )
+    buys.groupby("ticker", as_index=False)
+    .agg(
+        company_name=("company_name", "first"),
+        sector=("sector", "first"),
+        total_buy_quantity=("quantity", "sum"),
+        total_buy_amount=("net_amount", "sum"),
     )
+)
 
     sell_summary = (
         sells.groupby(["ticker"], as_index=False)
@@ -36,7 +38,17 @@ def calculate_positions(transactions):
     positions["open_quantity"] = (
         positions["total_buy_quantity"] - positions["total_sell_quantity"]
     )
+    positions["calculated_position_tag"] = "ACTIVE"
 
+    positions.loc[
+        positions["open_quantity"] == 0,
+        "calculated_position_tag"
+    ] = "CLOSED"
+
+    positions.loc[
+        (positions["open_quantity"] > 0) & (positions["total_sell_quantity"] > 0),
+        "calculated_position_tag"
+    ] = "PARTIAL_EXIT"
     positions["average_buy_price"] = (
         positions["total_buy_amount"] / positions["total_buy_quantity"]
     )

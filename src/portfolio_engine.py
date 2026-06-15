@@ -186,7 +186,74 @@ def add_market_values(positions):
 
     return positions
 
-def calculate_portfolio_summary(positions):
+def calculate_xirr(cashflows):
+    cashflows = [
+        (pd.Timestamp(date), float(amount))
+        for date, amount in cashflows
+        if pd.notna(date) and amount != 0
+    ]
+
+    if not cashflows:
+        return 0.0
+
+    has_positive = any(amount > 0 for _, amount in cashflows)
+    has_negative = any(amount < 0 for _, amount in cashflows)
+
+    if not has_positive or not has_negative:
+        return 0.0
+
+    cashflows = sorted(cashflows, key=lambda item: item[0])
+    start_date = cashflows[0][0]
+
+    def npv(rate):
+        total = 0.0
+
+        for date, amount in cashflows:
+            years = (date - start_date).days / 365.25
+            total += amount / ((1 + rate) ** years)
+
+        return total
+
+    low = -0.9999
+    high = 10.0
+    mid = 0.0
+
+    for _ in range(100):
+        mid = (low + high) / 2.0
+        value = npv(mid)
+
+        if abs(value) < 0.0001:
+            return round(mid * 100, 2)
+
+        if value > 0:
+            low = mid
+        else:
+            high = mid
+
+    return round(mid * 100, 2)
+
+def calculate_portfolio_xirr(transactions, positions):
+    cashflows = []
+
+    for _, row in transactions.iterrows():
+        if row["transaction_type"] == "BUY":
+            cashflows.append((row["transaction_date"], -row["net_amount"]))
+
+        elif row["transaction_type"] == "SELL":
+            cashflows.append((row["transaction_date"], row["net_amount"]))
+
+    current_open_value = positions.loc[
+        positions["open_quantity"] > 0,
+        "current_value"
+    ].sum()
+
+    if current_open_value > 0:
+        today = pd.Timestamp(datetime.today().date())
+        cashflows.append((today, current_open_value))
+
+    return round(calculate_xirr(cashflows), 2)
+
+def calculate_portfolio_summary(positions, transactions=None):
     lifetime_capital_deployed = positions["total_buy_amount"].sum()
 
     open_positions = positions[positions["open_quantity"] > 0].copy()
@@ -229,6 +296,11 @@ def calculate_portfolio_summary(positions):
     best_by_amount = positions.sort_values("total_pnl", ascending=False).iloc[0]
     worst_by_amount = positions.sort_values("total_pnl", ascending=True).iloc[0]
 
+    portfolio_xirr_pct = 0
+
+    if transactions is not None:
+        portfolio_xirr_pct = calculate_portfolio_xirr(transactions, positions)
+        
     return {
         "lifetime_capital_deployed": round(lifetime_capital_deployed, 2),
         "open_capital": round(open_capital, 2),
@@ -245,6 +317,7 @@ def calculate_portfolio_summary(positions):
         "worst_by_pct": worst_by_pct["ticker"],
         "best_by_amount": best_by_amount["ticker"],
         "worst_by_amount": worst_by_amount["ticker"],
+        "portfolio_xirr_pct": portfolio_xirr_pct,
     }
 
 

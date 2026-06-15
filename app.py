@@ -58,7 +58,60 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Stock Metrics Dashboard")
+st.markdown(
+    """
+    <div style="
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 24px 30px;
+        border-radius: 8px;
+        border-bottom: 4px solid #3b82f6;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    ">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h1 style="
+                    color: #ffffff;
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    margin: 0;
+                    font-size: 32px;
+                    font-weight: 800;
+                    letter-spacing: -0.5px;
+                ">
+                    📈 Stock Metrics Dashboard
+                </h1>
+                <p style="
+                    color: #94a3b8;
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    margin: 5px 0 0 0;
+                    font-size: 14px;
+                    font-weight: 400;
+                ">
+                    Institutional-Grade Portfolio Analytics & Quantitative Risk Tool
+                </p>
+            </div>
+            <div style="
+                background: rgba(59, 130, 246, 0.1);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+                padding: 6px 14px;
+                border-radius: 20px;
+            ">
+                <span style="
+                    color: #60a5fa;
+                    font-size: 12px;
+                    font-weight: 600;
+                    font-family: monospace;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                ">
+                    ● Live Engine Connected
+                </span>
+            </div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 template_file = create_excel_template()
 
@@ -151,6 +204,17 @@ with st.spinner("Loading portfolio data..."):
     if selected_broker != "All":
         transactions = transactions[transactions["broker"] == selected_broker]
    
+    account_options = ["All"] + sorted(
+    transactions["account_name"].dropna().astype(str).unique().tolist()
+    )
+
+    selected_account = st.sidebar.selectbox(
+    "Account",
+    account_options,
+    )
+
+    if selected_account != "All":
+        transactions = transactions[transactions["account_name"] == selected_account]
     
     positions = calculate_positions(transactions)
     positions = add_market_values(positions)
@@ -161,7 +225,7 @@ with st.spinner("Loading portfolio data..."):
         positions["final_sector"] = positions.get("sector", "Unknown")
         positions["final_industry"] = "Unknown"
 
-    summary = calculate_portfolio_summary(positions)
+    summary = calculate_portfolio_summary(positions, transactions)
     benchmark = calculate_benchmark_comparison(transactions, summary)
     risk_metrics = calculate_risk_metrics(positions)
     messages = get_performance_message(benchmark)
@@ -193,7 +257,30 @@ if "dashboard_pdf_bytes" in st.session_state:
     )
 
 
-st.subheader("Portfolio Summary")
+st.markdown(
+    """
+    <div style="
+        background: linear-gradient(90deg, #f0f4f8 0%, #ffffff 100%);
+        padding: 10px 15px;
+        border-left: 6px solid #1e3a8a;
+        border-radius: 4px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    ">
+        <h2 style="
+            color: #1e3a8a;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        ">
+            📊 Major Ratios of My Portfolio
+        </h2>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 row1 = st.columns(4)
 row1[0].metric("Lifetime Capital Deployed", f"₹{summary['lifetime_capital_deployed']:,.0f}")
@@ -218,7 +305,30 @@ row4[0].metric("Best by Amount", summary["best_by_amount"])
 row4[1].metric("Best by %", summary["best_by_pct"])
 row4[2].metric("Worst by %", summary["worst_by_pct"])
 
-st.subheader("Benchmark Comparison")
+st.markdown(
+    """
+    <div style="
+        background: linear-gradient(90deg, #f0f4f8 0%, #ffffff 100%);
+        padding: 10px 15px;
+        border-left: 6px solid #1e3a8a;
+        border-radius: 4px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    ">
+        <h2 style="
+            color: #1e3a8a;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        ">
+            Benchmark Comparison and Performance Analysis
+        </h2>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 bench_cols = st.columns(4)
 
@@ -227,13 +337,42 @@ bench_cols[1].metric("Your Alpha vs Nifty", f"{benchmark['nifty_alpha_pct']}%")
 bench_cols[2].metric("USD-INR Change", f"{benchmark['usd_inr_return_pct']}%")
 bench_cols[3].metric("FD CAGR Alpha", f"{benchmark['fd_alpha_pct']}%")
 
+xirr_cols = st.columns(4)
+
+xirr_cols[0].metric("Portfolio XIRR", f"{benchmark['portfolio_xirr_pct']}%")
+xirr_cols[1].metric("Nifty Cashflow XIRR", f"{benchmark['nifty_cashflow_xirr_pct']}%")
+xirr_cols[2].metric("XIRR Alpha vs Nifty", f"{benchmark['xirr_alpha_vs_nifty_pct']}%")
+
 st.info(messages["nifty_message"])
 st.info(messages["fd_message"])
 
 
 st.divider()
 
-st.subheader("Risk Metrics")
+st.markdown(
+    """
+    <div style="
+        background: linear-gradient(90deg, #f0f4f8 0%, #ffffff 100%);
+        padding: 10px 15px;
+        border-left: 6px solid #1e3a8a;
+        border-radius: 4px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    ">
+        <h2 style="
+            color: #1e3a8a;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        ">
+           Risk Metrics
+        </h2>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 risk_cols = st.columns(4)
 

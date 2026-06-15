@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 import yfinance as yf
 
+from portfolio_engine import calculate_xirr
 
 def get_first_buy_date(transactions):
     buy_transactions = transactions[transactions["transaction_type"] == "BUY"]
@@ -75,6 +76,9 @@ def calculate_benchmark_comparison(transactions, portfolio_summary):
     portfolio_return = portfolio_summary["lifetime_return_pct"]
     portfolio_cagr = portfolio_summary["lifetime_cagr_pct"]
 
+    cashflow_matched_nifty = calculate_cashflow_matched_benchmark(transactions)
+    portfolio_xirr = portfolio_summary.get("portfolio_xirr_pct", portfolio_cagr)
+
     return {
         "start_date": start_date.date(),
         "portfolio_return_pct": round(portfolio_return, 2),
@@ -88,6 +92,12 @@ def calculate_benchmark_comparison(transactions, portfolio_summary):
         "usd_inr_alpha_pct": round(portfolio_return - usd_inr["absolute_return_pct"], 2),
         "fd_assumed_cagr_pct": 7.0,
         "fd_alpha_pct": round(portfolio_cagr - 7.0, 2),
+        "portfolio_xirr_pct": portfolio_xirr,
+        "nifty_cashflow_xirr_pct": cashflow_matched_nifty["benchmark_xirr_pct"],
+        "xirr_alpha_vs_nifty_pct": round(
+            portfolio_xirr - cashflow_matched_nifty["benchmark_xirr_pct"], 2
+        ),
+        "nifty_cashflow_current_value": cashflow_matched_nifty["benchmark_current_value"],
     }
 
 
@@ -105,4 +115,45 @@ def get_performance_message(benchmark):
     return {
         "nifty_message": nifty_message,
         "fd_message": fd_message,
+    }
+
+def calculate_cashflow_matched_benchmark(transactions, benchmark_ticker="^NSEI"):
+    transactions = transactions.sort_values("transaction_date").copy()
+
+    start_date = transactions["transaction_date"].min()
+    end_date = pd.Timestamp(datetime.today().date()) + pd.Timedelta(days=1)
+
+    close = get_close_series(benchmark_ticker, start_date, end_date)
+
+    benchmark_units = 0
+    cashflows = []
+
+    for _, row in transactions.iterrows():
+        trade_date = pd.Timestamp(row["transaction_date"])
+        available_prices = close[close.index >= trade_date]
+
+        if available_prices.empty:
+            continue
+
+        benchmark_price = float(available_prices.iloc[0])
+        amount = float(row["net_amount"])
+
+        if row["transaction_type"] == "BUY":
+            benchmark_units += amount / benchmark_price
+            cashflows.append((trade_date, -amount))
+
+        elif row["transaction_type"] == "SELL":
+            benchmark_units -= amount / benchmark_price
+            cashflows.append((trade_date, amount))
+
+    benchmark_current_value = benchmark_units * float(close.iloc[-1])
+
+    if benchmark_current_value > 0:
+        cashflows.append((pd.Timestamp(end_date), benchmark_current_value))
+
+    benchmark_xirr = calculate_xirr(cashflows)
+
+    return {
+        "benchmark_current_value": round(benchmark_current_value, 2),
+        "benchmark_xirr_pct": round(benchmark_xirr, 2),
     }

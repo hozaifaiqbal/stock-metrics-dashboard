@@ -31,7 +31,7 @@ def generate_weekly_html_report():
     positions = calculate_positions(transactions)
     positions = add_market_values(positions)
 
-    summary = calculate_portfolio_summary(positions)
+    summary = calculate_portfolio_summary(positions, transactions)
     benchmark = calculate_benchmark_comparison(transactions, summary)
     messages = get_performance_message(benchmark)
     risk_metrics = calculate_risk_metrics(positions)
